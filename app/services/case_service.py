@@ -2,7 +2,9 @@ from fastapi import HTTPException, status
 
 from app.database.neo4j import get_session
 from app.core.authorization import require_case_role, READ_ROLES, WRITE_ROLES, OWNER_ROLES
+from app.services.uncertainty_evolution import aggregate_uncertainty_evolution
 from app.repositories.case_repository import (
+    get_uncertainty_snapshots_by_user,
     create_case,
     get_cases_by_user,
     update_case_uncertainty,
@@ -28,6 +30,17 @@ def get_cases_service(current_user_id: str, user_id: str):
         )
     with get_session() as tx:
         return get_cases_by_user(tx, user_id)
+
+
+def get_uncertainty_evolution_service(current_user_id: str, user_id: str):
+    if current_user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Você só pode consultar seus próprios casos",
+        )
+    with get_session() as tx:
+        rows = get_uncertainty_snapshots_by_user(tx, user_id)
+    return aggregate_uncertainty_evolution(rows)
 
 
 def get_case_service(current_user_id: str, caso_id: str):

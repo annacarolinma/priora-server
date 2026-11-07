@@ -591,3 +591,27 @@ def _estimated_profile_response(caso_id, record):
             else None
         ),
     }
+
+
+def get_uncertainty_snapshots_by_user(tx, user_id):
+    """
+    Uma linha por (caso ativo do usuário, instante de recálculo) com a incerteza
+    do caso naquele instante = a do suspeito líder (a menor entre os suspeitos).
+    """
+    query = """
+    MATCH (u:Usuario {id: $userId})
+
+    OPTIONAL MATCH (u)-[:RESPONSAVEL_POR]->(c1:Caso)
+    OPTIONAL MATCH (u)-[:TEM_ACESSO {status: 'Ativo'}]->(c2:Caso)
+
+    WITH collect(c1) + collect(c2) AS todos
+    UNWIND todos AS c
+    WITH DISTINCT c
+    WHERE c IS NOT NULL AND c.status = 'Ativo'
+
+    MATCH (c)-[:TEM_ANALISE]->(a:AnaliseProb)
+    WITH c.id AS casoId, a.calculadoEm AS calculadoEm, min(a.uncertaintyPct) AS incerteza
+    RETURN casoId, toString(calculadoEm) AS calculadoEm, incerteza
+    ORDER BY calculadoEm ASC
+    """
+    return [record.data() for record in tx.run(query, userId=user_id)]

@@ -3,6 +3,7 @@ from app.core.security import get_current_user_id
 from app.services.case_service import (
     create_case_service,
     get_cases_service,
+    get_uncertainty_evolution_service,
     update_uncertainty_service,
     get_case_service,
     update_case_service,
@@ -32,6 +33,11 @@ def create_case(data: CreateCaseRequest, current_user_id: str = Depends(get_curr
 @router.get("/user/{user_id}")
 def get_cases(user_id: str, current_user_id: str = Depends(get_current_user_id)):
     return get_cases_service(current_user_id, user_id)
+
+
+@router.get("/user/{user_id}/uncertainty-evolution")
+def get_uncertainty_evolution(user_id: str, current_user_id: str = Depends(get_current_user_id)):
+    return get_uncertainty_evolution_service(current_user_id, user_id)
 
 
 @router.get("/{caso_id}")
