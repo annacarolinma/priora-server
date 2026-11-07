@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 import traceback
 
+from app.core.security import get_current_user_id
 from app.services.investigation_board_service import (
+    ensure_board_write_access,
     get_board_service,
     save_board_service,
 )
@@ -12,8 +14,8 @@ router = APIRouter(prefix="/cases", tags=["Quadro Investigativo"])
 
 
 @router.get("/{caso_id}/board")
-def get_board(caso_id: str):
-    board = get_board_service(caso_id)
+def get_board(caso_id: str, current_user_id: str = Depends(get_current_user_id)):
+    board = get_board_service(current_user_id, caso_id)
 
     if board is None:
         raise HTTPException(status_code=404, detail="Caso não encontrado.")
@@ -22,13 +24,21 @@ def get_board(caso_id: str):
 
 
 @router.put("/{caso_id}/board")
-def save_board(caso_id: str, data: SaveBoardRequest):
+def save_board(
+    caso_id: str,
+    data: SaveBoardRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
     try:
         return save_board_service(
+            current_user_id,
             caso_id,
             [node.model_dump() for node in data.nodes],
             [edge.model_dump() for edge in data.edges],
         )
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         if "não encontrado" in str(e).lower():
@@ -43,7 +53,14 @@ def save_board(caso_id: str, data: SaveBoardRequest):
 
 
 @router.post("/{caso_id}/board/images", status_code=201)
-async def upload_board_image_route(caso_id: str, file: UploadFile = File(...)):
+async def upload_board_image_route(
+    caso_id: str,
+    file: UploadFile = File(...),
+    current_user_id: str = Depends(get_current_user_id),
+):
+    if not ensure_board_write_access(current_user_id, caso_id):
+        raise HTTPException(status_code=404, detail="Caso não encontrado.")
+
     file_bytes = await file.read()
 
     try:
@@ -55,8 +72,6 @@ async def upload_board_image_route(caso_id: str, file: UploadFile = File(...)):
         return {"url": url}
 
     except Exception as e:
-        import traceback
-
         traceback.print_exc()
         print("ERRO REAL:", repr(e))
 
