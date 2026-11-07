@@ -411,53 +411,29 @@ def update_case(tx, caso_id, data, user_id):
 # ============================================================
 
 def delete_case(tx, caso_id, user_id=None):
+    """
+    Exclui o caso e TODOS os nós que pertencem a ele, na mesma transação:
+    suspeitos, evidências, contatos, análises probabilísticas, ações
+    investigativas e o histórico do caso. As relações com usuários
+    (RESPONSAVEL_POR / TEM_ACESSO / REALIZOU) saem junto com o DETACH, mas os
+    usuários em si nunca são apagados.
 
-    # Primeiro buscamos o nome para colocar no histórico.
-    find_query = """
-    MATCH (c:Caso {id: $casoId})
-
-    RETURN
-        c.id AS id,
-        c.nome AS nome
+    Obs.: o histórico do caso é excluído junto com ele (pertence ao caso),
+    por isso não é gravado um registro "Caso excluído".
     """
 
-    find_result = tx.run(
-        find_query,
-        casoId=caso_id
-    )
-
-    record = find_result.single()
-
-    if not record:
-        raise Exception("Caso não encontrado")
-
-    caso_nome = record["nome"]
-
-    # IMPORTANTE:
-    # O histórico é criado ANTES de apagar o Caso.
-    if user_id:
-        create_history(
-            tx=tx,
-            user_id=user_id,
-            caso_id=caso_id,
-            action="DELETE",
-            entity_type="CASO",
-            entity_id=caso_id,
-            entity_name=caso_nome,
-            details="Caso excluído",
-        )
-
-    # Agora apaga o caso
     query = """
     MATCH (c:Caso {id: $casoId})
 
-    OPTIONAL MATCH (c)-[r]-()
+    OPTIONAL MATCH (c)-[:TEM_SUSPEITO|TEM_EVIDENCIA|TEM_CONTATO|TEM_ANALISE|TEM_ACAO]->(filho)
+    WITH c, collect(DISTINCT filho) AS filhos
 
-    DELETE r
+    OPTIONAL MATCH (h:HistoricoCaso)-[:REFERENTE_A]->(c)
+    WITH c, filhos, collect(DISTINCT h) AS historico
 
-    WITH c
-
-    DELETE c
+    FOREACH (n IN filhos | DETACH DELETE n)
+    FOREACH (n IN historico | DETACH DELETE n)
+    DETACH DELETE c
 
     RETURN $casoId AS casoId
     """
