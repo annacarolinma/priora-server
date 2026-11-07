@@ -3,9 +3,14 @@
 # quadro ficam em volume (Supabase só é usado se SUPABASE_* estiver definido).
 #
 #   cp .env.example .env     # preencha SECRET_KEY, MAIL_*, SUPPORT_EMAIL
-#   docker compose up -d --build
+#   docker compose up -d --build                  # Neo4j + API
+#   docker compose --profile web up -d --build    # + front (pasta ../priora_client)
 #
 # API: http://localhost:8000   |   Neo4j Browser: http://localhost:7474
+# Front (perfil "web"): http://localhost:5173
+#
+# Em outra máquina da rede, defina no .env o endereço visto pelo navegador:
+#   PUBLIC_API_URL=http://IP:8000   CORS_ORIGINS=http://IP:5173   FRONTEND_URL=http://IP:5173
 services:
   neo4j:
     image: neo4j:5-community
@@ -44,6 +49,20 @@ services:
         condition: service_healthy
     volumes:
       - uploads:/app/uploads
+
+  web:
+    # Front do Priora. Exige o repositório priora_client ao lado deste.
+    profiles: ["web"]
+    build:
+      context: ../priora_client
+      args:
+        # embutido no build: endereço da API como o NAVEGADOR enxerga
+        VITE_API_URL: ${PUBLIC_API_URL:-http://localhost:8000}
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
 
 volumes:
   neo4j_data:
