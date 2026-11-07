@@ -39,3 +39,5 @@ dist/
 # 🔥 OS files
 .DS_Store
 Thumbs.db
+# Imagens do quadro (modo local)
+uploads/

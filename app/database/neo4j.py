@@ -31,9 +31,9 @@ def get_session():
 def verify_connection():
     try:
         driver.verify_connectivity()
-        print("Neo4j Aura conectado com sucesso")
+        print("Neo4j conectado com sucesso")
     except Exception as e:
-        print(f"Erro ao conectar no Neo4j Aura: {e}")
+        print(f"Erro ao conectar no Neo4j: {e}")
         raise
 
 

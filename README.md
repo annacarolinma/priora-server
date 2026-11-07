@@ -8,6 +8,22 @@ Este serviço é responsável pelo processamento das evidências, cálculo proba
 
 ## ⚡ Quick Start
 
+### Opção 1 — Docker (recomendada: tudo local, nenhum dado sai da máquina)
+
+```bash
+cp .env.example .env      # preencha SECRET_KEY, MAIL_* e SUPPORT_EMAIL
+docker compose up -d --build
+```
+
+* API: http://localhost:8000 (docs em `/docs`)
+* Neo4j Browser: http://localhost:7474 (usuário `neo4j`, senha = `NEO4J_LOCAL_PASSWORD`)
+* O banco fica no volume `neo4j_data` e as imagens do quadro em `uploads`.
+  Deixe `SUPABASE_*` vazio no `.env` para não depender de nuvem.
+* Para apagar todos os dados: `docker compose down -v`.
+* O front roda à parte (`npm run dev` no `priora_client`, porta 5173).
+
+### Opção 2 — Python local (usa o Neo4j do `.env`, ex.: Aura)
+
 ```bash
 python -m venv venv
 # Windows:
@@ -16,7 +32,6 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
-docker-compose up -d
 uvicorn main:app --reload
 ```
 

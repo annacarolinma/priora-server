@@ -10,11 +10,11 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_BOARD_BUCKET = os.getenv("SUPABASE_BOARD_BUCKET", "quadro-investigativo")
 
-if not all([SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY]):
-    raise ValueError(
-        "Variáveis do Supabase não configuradas corretamente "
-        "(SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY)"
-    )
+# Sem Supabase configurado (ex.: implantação local/Docker), as imagens do
+# quadro ficam em disco e são servidas pela própria API em /uploads.
+USE_SUPABASE = bool(SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY)
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+PUBLIC_API_URL = os.getenv("PUBLIC_API_URL", "http://127.0.0.1:8000").rstrip("/")
 
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
 MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024  # 8 MB
@@ -43,6 +43,14 @@ async def upload_board_image(caso_id: str, file_bytes: bytes, content_type: str)
 
     extension = _EXTENSION_BY_CONTENT_TYPE[content_type]
     object_path = f"{caso_id}/{uuid.uuid4()}.{extension}"
+
+    if not USE_SUPABASE:
+        local_path = os.path.join(UPLOAD_DIR, caso_id)
+        os.makedirs(local_path, exist_ok=True)
+        filename = f"{uuid.uuid4()}.{extension}"
+        with open(os.path.join(local_path, filename), "wb") as f:
+            f.write(file_bytes)
+        return f"{PUBLIC_API_URL}/uploads/{caso_id}/{filename}"
 
     upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_BOARD_BUCKET}/{object_path}"
 
