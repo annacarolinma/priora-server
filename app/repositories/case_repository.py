@@ -101,6 +101,15 @@ def get_cases_by_user(tx, user_id):
     WITH c
     WHERE c IS NOT NULL
 
+    // suspeito líder = o de maior probabilidade (antes pegava o primeiro da lista)
+    CALL {
+        WITH c
+        OPTIONAL MATCH (c)-[:TEM_SUSPEITO]->(top:Suspeito)
+        RETURN top AS topSuspeito
+        ORDER BY coalesce(top.probabilidadeAtual, -1) DESC
+        LIMIT 1
+    }
+
     OPTIONAL MATCH (c)-[:TEM_SUSPEITO]->(s:Suspeito)
 
     OPTIONAL MATCH (c)-[:TEM_EVIDENCIA]->(e:Evidencia)
@@ -110,7 +119,7 @@ def get_cases_by_user(tx, user_id):
     WITH
         c,
         resp,
-        collect(DISTINCT s)[0] AS topSuspeito,
+        topSuspeito,
         count(DISTINCT s) AS qtdSuspeitos,
         count(DISTINCT e) AS qtdEvidencias,
         c.atualizadoEm AS atualizadoEm
