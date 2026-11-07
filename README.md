@@ -35,15 +35,25 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
+### Testes automatizados
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest tests
+```
+
+Cobrem o modelo bayesiano (valores calculados à mão, inclusive os exemplos da
+documentação), a entropia de Shannon da priorização de ações, a validação dos
+pesos (0 < x < 1) e o limite de tentativas de login. Não precisam de banco.
+
 ---
 
 ## 🚀 Tecnologias
 
 * Python
 * FastAPI
-* Neo4j
-* pgmpy
-* NetworkX
+* Neo4j (Aura ou local, via Docker)
+* Supabase Storage (fotos; opcional no modo local)
 * Docker
 
 ---
@@ -52,12 +62,14 @@ uvicorn main:app --reload
 
 ```
 app/
-├── api/        # Rotas da API
-├── services/   # Regras de negócio
-├── models/     # Modelos de dados
-├── bayes/      # Inferência probabilística
-├── graph/      # Modelagem de relações
-└── database/   # Conexão com banco
+├── api/           # Rotas da API (FastAPI)
+├── services/      # Regras de negócio e controle de acesso por papel
+├── repositories/  # Consultas Cypher (Neo4j)
+├── schemas/       # Validação de entrada (Pydantic)
+├── bayes/         # Inferência bayesiana (apenas biblioteca padrão)
+├── core/          # Segurança e autorização
+├── database/      # Conexão com Neo4j e Supabase
+└── utils/         # JWT, e-mail
 ```
 
 ---
