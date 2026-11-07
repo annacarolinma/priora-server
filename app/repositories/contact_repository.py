@@ -87,3 +87,11 @@ def delete_contact(tx, caso_id, contato_id):
         raise Exception("Contato não encontrado nesse caso")
 
     return {"deleted": True, "id": record["id"]}
+
+
+def get_contact_name(tx, contato_id: str) -> str | None:
+    record = tx.run(
+        "MATCH (ct:Contato {id: $id}) RETURN ct.nome AS nome",
+        id=contato_id,
+    ).single()
+    return record["nome"] if record else None

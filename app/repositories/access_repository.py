@@ -170,3 +170,12 @@ def delete_case_access(tx, caso_id, user_id):
         "userId": record["userId"],
         "casoId": record["casoId"]
     }
+
+
+def get_user_label(tx, user_id: str) -> str | None:
+    """Nome completo do usuário (para registrar no histórico)."""
+    record = tx.run(
+        "MATCH (u:Usuario {id: $id}) RETURN u.primeiroNome + ' ' + u.sobrenome AS nome",
+        id=user_id,
+    ).single()
+    return record["nome"] if record else None
