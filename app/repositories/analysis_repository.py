@@ -4,6 +4,7 @@ from app.bayes.model import (
     Evidence,
     EvidenceType,
     EvidenceStatus,
+    evidence_contribution,
 )
 
 def generate_analysis(tx, data):
@@ -81,6 +82,9 @@ def get_suspect_analysis(tx, caso_id, suspeito_id):
                     e.pesoCondicional *
                     coalesce(v.pesoVinculo, 1.0),
 
+                // todos os suspeitos ligados à evidência (fator de exclusividade)
+                suspectIds: [(e)-[:VINCULA]->(x:Suspeito) | x.id],
+
                 dataColeta: toString(e.dataColeta),
                 descricao: e.descricao
             }
@@ -120,6 +124,17 @@ def get_suspect_analysis(tx, caso_id, suspeito_id):
         raise Exception("Suspeito não encontrado")
 
     suspeito = record["suspeito"]
+
+    # contribuição de cada evidência, calculada pela MESMA função do modelo
+    for ev in suspeito["evidencias"]:
+        ev["contribuicao"] = round(
+            evidence_contribution(
+                ev["pesoCondicional"],
+                ev["pesoVinculo"],
+                len(ev["suspectIds"]),
+            ),
+            6,
+        )
 
     # executa o mesmo modelo bayesiano usado na análise
     suspects_raw = load_suspects(tx, caso_id)

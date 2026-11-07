@@ -163,6 +163,19 @@ import math
 from typing import List, Optional
 
 
+def evidence_contribution(reliability: float, link_weight: float, n_linked: int) -> float:
+    """
+    C = 1 + r * v * 1/|S| (seção 16.3 da documentação).
+
+    r = confiabilidade da evidência, v = peso do vínculo com ESTE suspeito e
+    |S| = número de suspeitos vinculados à evidência (fator de exclusividade).
+    É a única definição da fórmula: o motor bayesiano e a tela de Análise
+    Probabilística usam esta função, para que a explicação sempre bata com o
+    cálculo.
+    """
+    return 1.0 + (reliability * link_weight * (1.0 / max(n_linked, 1)))
+
+
 # Limite do argumento de exp() para evitar overflow em float64 (e^709 ≈ 8e307).
 MAX_LOG_EXP = 700.0
 
@@ -282,13 +295,12 @@ class BayesianNetwork:
 
         peso_vinculo = evidence.suspect_links[suspect.id]
 
-        # suspeitos que também recebem essa evidência
-        competitors = len(evidence.suspect_links)
-
-        # quanto mais compartilhada a evidência, menor o impacto (fator de exclusividade)
-        share_factor = 1.0 / competitors
-
-        return 1.0 + (evidence.reliability * peso_vinculo * share_factor)
+        # suspeitos que também recebem essa evidência (fator de exclusividade)
+        return evidence_contribution(
+            evidence.reliability,
+            peso_vinculo,
+            len(evidence.suspect_links),
+        )
 
     # ──────────────────────────────────────────────────────────────
     # LIKELIHOOD RATIO MODEL
