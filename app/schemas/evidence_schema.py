@@ -21,9 +21,9 @@ class StatusEvidencia(str, Enum):
 
 
 class VinculoInput(BaseModel):
-    """Peso do vínculo entre a evidência e UM suspeito específico (0-1)."""
+    """Peso do vínculo entre a evidência e UM suspeito específico (estritamente entre 0 e 1: nunca 0% nem 100%)."""
     suspeitoId: str
-    pesoVinculo: float = Field(..., ge=0.0, le=1.0, example=0.75)
+    pesoVinculo: float = Field(..., gt=0.0, lt=1.0, example=0.75)
 
 
 class CreateEvidenceRequest(BaseModel):
@@ -37,7 +37,7 @@ class CreateEvidenceRequest(BaseModel):
 
     dataColeta: str = Field(..., example="2025-04-24")
 
-    peso: float = Field(..., ge=0.0, le=1.0, example=0.5)
+    peso: float = Field(..., gt=0.0, lt=1.0, example=0.5)
 
 
 class DeleteEvidencesRequest(BaseModel):
@@ -50,5 +50,5 @@ class UpdateEvidenceRequest(BaseModel):
     status: StatusEvidencia | None = None
     descricao: str | None = None
     dataColeta: str | None = None
-    peso: float | None = Field(default=None, ge=0.0, le=1.0)
+    peso: float | None = Field(default=None, gt=0.0, lt=1.0)
     vinculos: list[VinculoInput] | None = None
