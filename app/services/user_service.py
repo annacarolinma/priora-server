@@ -1,6 +1,7 @@
 from app.database.neo4j import get_session
 from app.utils.jwt import create_access_token,decode_access_token
 from fastapi import HTTPException
+from app.core.rate_limit import login_limiter
 from app.utils.email import send_recovery_email
 from app.repositories.user_repository import (
     create_user,
@@ -27,10 +28,21 @@ def create_user_service(email, primeiro_nome, sobrenome, senha):
 
 
 def login_user_service(email, senha):
+    chave = (email or "").strip().lower()
+
+    espera = login_limiter.retry_after(chave)
+    if espera:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Muitas tentativas de login. Tente novamente em {max(1, espera // 60)} minuto(s).",
+            headers={"Retry-After": str(espera)},
+        )
+
     with get_session() as tx:
         user = login_user(tx, email)
 
         if not user:
+            login_limiter.register_failure(chave)
             raise HTTPException(
                 status_code=401,
                 detail="Email ou senha inválidos"
@@ -42,10 +54,13 @@ def login_user_service(email, senha):
         )
 
         if not senha_correta:
+            login_limiter.register_failure(chave)
             raise HTTPException(
                 status_code=401,
                 detail="Email ou senha inválidos"
             )
+
+        login_limiter.reset(chave)
 
         token = create_access_token({
             "sub": user["id"]
@@ -82,7 +97,16 @@ def reset_password_service(token, nova_senha):
     nova_hash = bcrypt.hashpw(nova_senha.encode(), bcrypt.gensalt()).decode()
 
     with get_session() as tx:
-        return reset_password(tx, token, nova_hash)
+        resultado = reset_password(tx, token, nova_hash)
+
+    if not resultado:
+        # token inexistente, já usado ou expirado: a senha NÃO foi alterada
+        raise HTTPException(
+            status_code=400,
+            detail="Link de recuperação inválido ou expirado. Solicite um novo.",
+        )
+
+    return {"message": "Senha atualizada"}
 
 def check_email_service(email):
     with get_session() as tx:
