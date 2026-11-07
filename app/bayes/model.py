@@ -163,6 +163,10 @@ import math
 from typing import List, Optional
 
 
+# Limite do argumento de exp() para evitar overflow em float64 (e^709 ≈ 8e307).
+MAX_LOG_EXP = 700.0
+
+
 class BayesianNetwork:
     """
     PRIORA v2 — Log-Bayes com Likelihood Ratio (LR)
@@ -229,12 +233,15 @@ class BayesianNetwork:
 
             trend = self._compute_trend(suspect.id, pct, prev_index)
 
-            bayes_numerator = math.exp(log_score) * prior
+            # exp direto estouraria (OverflowError) com ~1000+ evidências fortes;
+            # o posterior já usa log-space, estes valores só são armazenados/exibidos.
+            safe_likelihood = math.exp(min(log_score, MAX_LOG_EXP))
+            bayes_numerator = safe_likelihood * prior
 
             results.append(SuspectResult(
                 suspect=suspect,
                 prior=prior,
-                p_e_given_h=math.exp(log_score),
+                p_e_given_h=safe_likelihood,
                 numerator=bayes_numerator,
                 p_h_given_e=posterior,
                 probability_pct=pct,
