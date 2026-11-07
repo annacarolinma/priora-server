@@ -30,6 +30,3 @@ class UpdateUserRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     senhaAntiga: str
     novaSenha: str
-
-class UpdatePhotoRequest(BaseModel):
-    fotoBase64: str

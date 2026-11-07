@@ -71,6 +71,10 @@ async def upload_board_image_route(
         )
         return {"url": url}
 
+    except ValueError as e:
+        # arquivo inválido (tipo, tamanho): erro do cliente, não do servidor
+        raise HTTPException(status_code=400, detail=str(e))
+
     except Exception as e:
         traceback.print_exc()
         print("ERRO REAL:", repr(e))

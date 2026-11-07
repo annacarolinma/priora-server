@@ -17,7 +17,7 @@ docker compose up -d --build
 
 * API: http://localhost:8000 (docs em `/docs`)
 * Neo4j Browser: http://localhost:7474 (usuário `neo4j`, senha = `NEO4J_LOCAL_PASSWORD`)
-* O banco fica no volume `neo4j_data` e as imagens do quadro em `uploads`.
+* O banco fica no volume `neo4j_data`; as imagens (quadro, fotos de suspeitos e de perfil) ficam em `uploads`.
   Deixe `SUPABASE_*` vazio no `.env` para não depender de nuvem.
 * Para apagar todos os dados: `docker compose down -v`.
 * O front roda à parte (`npm run dev` no `priora_client`, porta 5173).

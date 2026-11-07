@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 
+from app.core.security import get_current_user_id
 from app.services.user_service import (
     create_user_service,
     login_user_service,
@@ -7,7 +8,7 @@ from app.services.user_service import (
     reset_password_service,
     check_email_service,
     get_current_user_service,
-    update_user_photo_service,
+    upload_user_photo_service,
     update_user_service,
     change_password_service,
 )
@@ -17,7 +18,6 @@ from app.schemas.user_schema import (
     LoginRequest,
     RecoverRequest,
     ResetPasswordRequest,
-    UpdatePhotoRequest,
     UpdateUserRequest,
     ChangePasswordRequest,
 )
@@ -37,17 +37,17 @@ def create_user(data: CreateUserRequest):
         data.senha
     )
 
-@router.put("/me/photo")
-def update_photo(
-    data: UpdatePhotoRequest,
-    authorization: str = Header(...)
+@router.post("/me/photo")
+async def upload_photo(
+    file: UploadFile = File(...),
+    current_user_id: str = Depends(get_current_user_id),
 ):
-    token = authorization.replace("Bearer ", "")
-
-    return update_user_photo_service(
-        token,
-        data.fotoBase64
-    )
+    """Foto de perfil por upload de arquivo (antes era uma string base64 salva no Neo4j)."""
+    file_bytes = await file.read()
+    try:
+        return await upload_user_photo_service(current_user_id, file_bytes, file.content_type)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/login")

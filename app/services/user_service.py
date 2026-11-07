@@ -2,6 +2,7 @@ from app.database.neo4j import get_session
 from app.utils.jwt import create_access_token,decode_access_token
 from fastapi import HTTPException
 from app.core.rate_limit import login_limiter
+from app.database.supabase_storage import upload_user_photo
 from app.utils.email import send_recovery_email
 from app.repositories.user_repository import (
     create_user,
@@ -181,42 +182,11 @@ def update_user_service(
 
     return user
 
-def update_user_photo_service(token, foto_base64):
-    try:
-        payload = decode_access_token(token)
-        user_id = payload.get("sub")
-
-        if not user_id:
-            raise HTTPException(
-                status_code=401,
-                detail="Token inválido"
-            )
-
-    except Exception:
-        raise HTTPException(
-            status_code=401,
-            detail="Token inválido ou expirado"
-        )
-
-    if not foto_base64:
-        raise HTTPException(
-            status_code=400,
-            detail="Imagem não enviada"
-        )
-
-    # Limita o tamanho da string Base64
-    if len(foto_base64) > 5_000_000:
-        raise HTTPException(
-            status_code=400,
-            detail="Imagem muito grande"
-        )
+async def upload_user_photo_service(user_id, file_bytes, content_type):
+    url = await upload_user_photo(user_id, file_bytes, content_type)
 
     with get_session() as tx:
-        user = update_user_photo(
-            tx,
-            user_id,
-            foto_base64
-        )
+        user = update_user_photo(tx, user_id, url)
 
     if not user:
         raise HTTPException(
@@ -225,6 +195,7 @@ def update_user_photo_service(token, foto_base64):
         )
 
     return user
+
 
 def change_password_service(
     token,
