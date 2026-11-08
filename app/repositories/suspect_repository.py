@@ -162,7 +162,9 @@ def list_suspects_by_case(tx, caso_id):
 
         s.histDescumprimento AS histDescumprimento,
 
-        count(e) AS qtdEvidencias
+        count(e) AS qtdEvidencias,
+
+        collect(DISTINCT e {.id, .nome, .tipo, .status}) AS evidencias
 
     ORDER BY s.probabilidadeAtual DESC
     """
