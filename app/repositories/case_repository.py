@@ -473,11 +473,11 @@ def get_estimated_profile(tx, caso_id):
     MATCH (c:Caso {id: $casoId})
 
     RETURN
-        c.perfilEstimadoComportamento AS comportamento,
-        c.perfilEstimadoAgressividade AS agressividade,
-        c.perfilEstimadoProximidade AS proximidade,
-        c.perfilEstimadoConexoesSociais AS conexoesSociais,
-        c.perfilEstimadoNivelConfissao AS nivelConfissao,
+        c.perfilEstimadoHistoricoCriminal AS historicoCriminal,
+        c.perfilEstimadoCaracteristicasCriminais AS caracteristicasCriminais,
+        c.perfilEstimadoSignificanciaTempoLugar AS significanciaTempoLugar,
+        c.perfilEstimadoCoerenciaInterpessoal AS coerenciaInterpessoal,
+        c.perfilEstimadoConscienciaForense AS conscienciaForense,
         c.perfilEstimadoAtualizadoEm AS atualizadoEm
     """
 
@@ -510,21 +510,21 @@ def set_estimated_profile(
     MATCH (c:Caso {id: $casoId})
 
     SET
-        c.perfilEstimadoComportamento = $comportamento,
-        c.perfilEstimadoAgressividade = $agressividade,
-        c.perfilEstimadoProximidade = $proximidade,
-        c.perfilEstimadoConexoesSociais = $conexoesSociais,
-        c.perfilEstimadoNivelConfissao = $nivelConfissao,
+        c.perfilEstimadoHistoricoCriminal = $historicoCriminal,
+        c.perfilEstimadoCaracteristicasCriminais = $caracteristicasCriminais,
+        c.perfilEstimadoSignificanciaTempoLugar = $significanciaTempoLugar,
+        c.perfilEstimadoCoerenciaInterpessoal = $coerenciaInterpessoal,
+        c.perfilEstimadoConscienciaForense = $conscienciaForense,
 
         c.perfilEstimadoAtualizadoEm = datetime(),
         c.perfilEstimadoAtualizadoPor = $userId
 
     RETURN
-        c.perfilEstimadoComportamento AS comportamento,
-        c.perfilEstimadoAgressividade AS agressividade,
-        c.perfilEstimadoProximidade AS proximidade,
-        c.perfilEstimadoConexoesSociais AS conexoesSociais,
-        c.perfilEstimadoNivelConfissao AS nivelConfissao,
+        c.perfilEstimadoHistoricoCriminal AS historicoCriminal,
+        c.perfilEstimadoCaracteristicasCriminais AS caracteristicasCriminais,
+        c.perfilEstimadoSignificanciaTempoLugar AS significanciaTempoLugar,
+        c.perfilEstimadoCoerenciaInterpessoal AS coerenciaInterpessoal,
+        c.perfilEstimadoConscienciaForense AS conscienciaForense,
         c.perfilEstimadoAtualizadoEm AS atualizadoEm
     """
 
@@ -561,11 +561,11 @@ def set_estimated_profile(
 # ============================================================
 
 _ESTIMATED_PROFILE_FIELDS = (
-    "comportamento",
-    "agressividade",
-    "proximidade",
-    "conexoesSociais",
-    "nivelConfissao",
+    "historicoCriminal",
+    "caracteristicasCriminais",
+    "significanciaTempoLugar",
+    "coerenciaInterpessoal",
+    "conscienciaForense",
 )
 
 

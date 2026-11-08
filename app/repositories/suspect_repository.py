@@ -23,11 +23,11 @@ def get_suspect_by_id(tx, suspect_id: str):
         .nome,
         .idade,
         .fotoUrl,
-        .comportamento,
-        .agressividade,
-        .proximidade,
-        .conexoesSociais,
-        .nivelConfissao,
+        .historicoCriminal,
+        .caracteristicasCriminais,
+        .significanciaTempoLugar,
+        .coerenciaInterpessoal,
+        .conscienciaForense,
         .crimeSimilarAntes,
         .histDescumprimento,
         .probabilidadeAtual,
@@ -66,15 +66,15 @@ def create_suspect(tx, data):
 
         tendencia: 'Estável',
 
-        comportamento: $comportamento,
+        historicoCriminal: $historicoCriminal,
 
-        agressividade: $agressividade,
+        caracteristicasCriminais: $caracteristicasCriminais,
 
-        proximidade: $proximidade,
+        significanciaTempoLugar: $significanciaTempoLugar,
 
-        conexoesSociais: $conexoesSociais,
+        coerenciaInterpessoal: $coerenciaInterpessoal,
 
-        nivelConfissao: $nivelConfissao,
+        conscienciaForense: $conscienciaForense,
 
         crimeSimilarAntes: $crimeSimilarAntes,
 
@@ -148,15 +148,15 @@ def list_suspects_by_case(tx, caso_id):
 
         s.tendencia AS tendencia,
 
-        s.comportamento AS comportamento,
+        s.historicoCriminal AS historicoCriminal,
 
-        s.agressividade AS agressividade,
+        s.caracteristicasCriminais AS caracteristicasCriminais,
 
-        s.proximidade AS proximidade,
+        s.significanciaTempoLugar AS significanciaTempoLugar,
 
-        s.conexoesSociais AS conexoesSociais,
+        s.coerenciaInterpessoal AS coerenciaInterpessoal,
 
-        s.nivelConfissao AS nivelConfissao,
+        s.conscienciaForense AS conscienciaForense,
 
         s.crimeSimilarAntes AS crimeSimilarAntes,
 
@@ -239,15 +239,15 @@ def update_suspect(tx, suspect_id, data):
 
         s.fotoUrl = $fotoUrl,
 
-        s.comportamento = $comportamento,
+        s.historicoCriminal = $historicoCriminal,
 
-        s.agressividade = $agressividade,
+        s.caracteristicasCriminais = $caracteristicasCriminais,
 
-        s.proximidade = $proximidade,
+        s.significanciaTempoLugar = $significanciaTempoLugar,
 
-        s.conexoesSociais = $conexoesSociais,
+        s.coerenciaInterpessoal = $coerenciaInterpessoal,
 
-        s.nivelConfissao = $nivelConfissao,
+        s.conscienciaForense = $conscienciaForense,
 
         s.crimeSimilarAntes = $crimeSimilarAntes,
 
@@ -266,15 +266,15 @@ def update_suspect(tx, suspect_id, data):
 
         .fotoUrl,
 
-        .comportamento,
+        .historicoCriminal,
 
-        .agressividade,
+        .caracteristicasCriminais,
 
-        .proximidade,
+        .significanciaTempoLugar,
 
-        .conexoesSociais,
+        .coerenciaInterpessoal,
 
-        .nivelConfissao,
+        .conscienciaForense,
 
         .crimeSimilarAntes,
 

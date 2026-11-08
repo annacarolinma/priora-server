@@ -81,11 +81,11 @@ class Suspect:
     id:                 str
     name:               str
     age:                int                 = 0
-    behavior:           float               = 50.0
-    aggressiveness:     float               = 50.0
-    proximity:          float               = 50.0
-    social_connections: float               = 50.0
-    confession_level:   float               = 50.0
+    criminal_history:           float               = 50.0
+    criminal_characteristics:     float               = 50.0
+    time_place_significance:          float               = 50.0
+    interpersonal_coherence: float               = 50.0
+    forensic_awareness:   float               = 50.0
     crime_before:       str                 = "Não sei"
     non_compliance:     str                 = "Não sei"
     photo_url:          Optional[str]       = None

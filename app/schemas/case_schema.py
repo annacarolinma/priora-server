@@ -36,8 +36,8 @@ class UpdateCaseRequest(BaseModel):
 
 
 class EstimatedProfileRequest(BaseModel):
-    comportamento: float = Field(..., ge=0, le=100)
-    agressividade: float = Field(..., ge=0, le=100)
-    proximidade: float = Field(..., ge=0, le=100)
-    conexoesSociais: float = Field(..., ge=0, le=100)
-    nivelConfissao: float = Field(..., ge=0, le=100)
+    historicoCriminal: float = Field(..., ge=0, le=100)
+    caracteristicasCriminais: float = Field(..., ge=0, le=100)
+    significanciaTempoLugar: float = Field(..., ge=0, le=100)
+    coerenciaInterpessoal: float = Field(..., ge=0, le=100)
+    conscienciaForense: float = Field(..., ge=0, le=100)

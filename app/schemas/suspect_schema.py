@@ -22,11 +22,11 @@ class CreateSuspectRequest(BaseModel):
     idade: int = Field(..., ge=0, example=32)
     fotoUrl: Optional[str] = None
 
-    comportamento: float = Field(..., ge=0, le=100, example=70)
-    agressividade: float = Field(..., ge=0, le=100, example=55)
-    proximidade: float = Field(..., ge=0, le=100, example=80)
-    conexoesSociais: float = Field(..., ge=0, le=100, example=60)
-    nivelConfissao: float = Field(..., ge=0, le=100, example=20)
+    historicoCriminal: float = Field(..., ge=0, le=100, example=70)
+    caracteristicasCriminais: float = Field(..., ge=0, le=100, example=55)
+    significanciaTempoLugar: float = Field(..., ge=0, le=100, example=80)
+    coerenciaInterpessoal: float = Field(..., ge=0, le=100, example=60)
+    conscienciaForense: float = Field(..., ge=0, le=100, example=20)
 
     crimeSimilarAntes: RespostaHistorico
     histDescumprimento: RespostaHistorico
@@ -36,11 +36,11 @@ class UpdateSuspectRequest(BaseModel):
     idade: Optional[int] = None
     fotoUrl: Optional[str] = None
 
-    comportamento: float
-    agressividade: float
-    proximidade: float
-    conexoesSociais: float
-    nivelConfissao: float
+    historicoCriminal: float
+    caracteristicasCriminais: float
+    significanciaTempoLugar: float
+    coerenciaInterpessoal: float
+    conscienciaForense: float
 
     crimeSimilarAntes: str
     histDescumprimento: str

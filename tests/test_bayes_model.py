@@ -112,10 +112,10 @@ def test_sem_suspeitos_levanta_erro():
 
 
 def test_atributos_de_perfil_nao_alteram_o_resultado():
-    a = Suspect(id="s1", name="A", behavior=10, aggressiveness=10, proximity=10,
-                social_connections=10, confession_level=10, crime_before="Sim", non_compliance="Sim")
-    b = Suspect(id="s2", name="B", behavior=99, aggressiveness=99, proximity=99,
-                social_connections=99, confession_level=99, crime_before="Não", non_compliance="Não")
+    a = Suspect(id="s1", name="A", criminal_history=10, criminal_characteristics=10, time_place_significance=10,
+                interpersonal_coherence=10, forensic_awareness=10, crime_before="Sim", non_compliance="Sim")
+    b = Suspect(id="s2", name="B", criminal_history=99, criminal_characteristics=99, time_place_significance=99,
+                interpersonal_coherence=99, forensic_awareness=99, crime_before="Não", non_compliance="Não")
     res = by_id(BayesianNetwork().run("c", [a, b], []))
     assert res["s1"].p_h_given_e == pytest.approx(0.5)
     assert res["s2"].p_h_given_e == pytest.approx(0.5)
