@@ -65,7 +65,7 @@ def invite_user_to_case(tx, email, caso_id, papel, user_id):
     record = result.single()
 
     if not record:
-        raise Exception("Usuário não encontrado ou convite inválido")
+        raise LookupError("Usuário não encontrado ou convite inválido")
 
     return record.data()
 
@@ -82,7 +82,7 @@ def accept_invite(tx, user_id, caso_id):
     )
     record = result.single()
     if not record:
-        raise Exception("Convite não encontrado")
+        raise LookupError("Convite não encontrado")
     return record.data()
 
 
@@ -195,5 +195,5 @@ def decline_invite(tx, user_id, caso_id):
         userId=user_id, casoId=caso_id,
     ).single()
     if not record:
-        raise Exception("Convite não encontrado")
+        raise LookupError("Convite não encontrado")
     return record["convidadoPor"]

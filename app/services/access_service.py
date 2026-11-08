@@ -22,6 +22,13 @@ from app.repositories.history_repository import create_history
 
 
 def invite_user_service(current_user_id: str, email, caso_id, papel):
+    try:
+        return _invite_user(current_user_id, email, caso_id, papel)
+    except LookupError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+def _invite_user(current_user_id: str, email, caso_id, papel):
     with get_session() as tx:
         require_case_role(tx, current_user_id, caso_id, WRITE_ROLES)
         # quem convida é sempre o usuário autenticado, nunca um userId
@@ -45,6 +52,13 @@ def invite_user_service(current_user_id: str, email, caso_id, papel):
 
 
 def accept_invite_service(current_user_id: str, user_id, caso_id):
+    try:
+        return _accept_invite(current_user_id, user_id, caso_id)
+    except LookupError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+def _accept_invite(current_user_id: str, user_id, caso_id):
     if current_user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -68,6 +82,13 @@ def accept_invite_service(current_user_id: str, user_id, caso_id):
 
 
 def decline_invite_service(current_user_id: str, user_id, caso_id):
+    try:
+        return _decline_invite(current_user_id, user_id, caso_id)
+    except LookupError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+def _decline_invite(current_user_id: str, user_id, caso_id):
     if current_user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
