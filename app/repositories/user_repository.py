@@ -107,7 +107,7 @@ def get_user_by_id(tx, user_id):
 
     size([
         c IN casos
-        WHERE c.status <> 'Ativo'
+        WHERE c.status IN ['Finalizado', 'Concluído']
     ]) AS casosConcluidos
     """
 

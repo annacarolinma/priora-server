@@ -1,12 +1,21 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import Literal, Optional
+
+# Situações possíveis de um caso. Nomes antigos (usados por versões anteriores do
+# front) continuam aceitos e são convertidos.
+CaseStatus = Literal["Ativo", "Pendente", "Finalizado"]
+LEGACY_STATUS = {"Arquivado": "Pendente", "Concluído": "Finalizado"}
+
+
+def normalize_status(value):
+    return LEGACY_STATUS.get(value, value)
 
 
 class CreateCaseRequest(BaseModel):
     userId: str
     nome: str
     descricao: str
-    status: str
+    status: CaseStatus
     prioridade: str
     enderecoCep: str | None = None        # ← novo
     enderecoLogradouro: str | None = None
@@ -16,13 +25,19 @@ class CreateCaseRequest(BaseModel):
     enderecoEstado: str | None = None
     dataOcorrencia: str | None = None
 
+    @field_validator("status", mode="before")
+    @classmethod
+    def _status(cls, v):
+        return normalize_status(v)
+
+
 class UpdateUncertaintyRequest(BaseModel):
     incerteza: float
 
 class UpdateCaseRequest(BaseModel):
     nome: str
     descricao: str
-    status: str
+    status: CaseStatus
     prioridade: str
 
     enderecoCep: Optional[str] = None
@@ -33,6 +48,11 @@ class UpdateCaseRequest(BaseModel):
     enderecoEstado: Optional[str] = None
 
     dataOcorrencia: str
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def _status(cls, v):
+        return normalize_status(v)
 
 
 class EstimatedProfileRequest(BaseModel):
