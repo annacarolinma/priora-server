@@ -6,9 +6,15 @@ from app.services.priority_service import (
     list_priority_actions_service,
     update_priority_action_status_service,
     delete_priority_action_service,
+    list_action_types_service,
 )
 
 router = APIRouter(prefix="/priority-actions", tags=["PriorityActions"])
+
+
+@router.get("/types")
+def list_action_types(current_user_id: str = Depends(get_current_user_id)):
+    return list_action_types_service()
 
 
 @router.get("/case/{caso_id}")

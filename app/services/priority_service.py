@@ -9,6 +9,7 @@ from app.repositories.priority_repository import (
     get_case_id_for_action,
     get_action_for_exclusion,
     exclude_action,
+    action_type_catalog,
 )
 
 
@@ -62,3 +63,7 @@ def delete_priority_action_service(current_user_id: str, action_id: str):
             details="Ação excluída",
         )
         return {"deleted": True, "id": action_id}
+
+
+def list_action_types_service():
+    return action_type_catalog()
