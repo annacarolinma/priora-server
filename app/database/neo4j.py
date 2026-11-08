@@ -13,7 +13,20 @@ NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "neo4j")
 if not all([NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD]):
     raise ValueError("Variáveis do Neo4j não configuradas corretamente")
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
+# O Aura (e a rede no caminho) derruba conexões paradas sem avisar. Sem estas
+# opções, o driver reaproveitava uma conexão morta do pool e a requisição falhava
+# com SessionExpired / "Unable to retrieve routing information".
+#  - liveness_check_timeout: antes de usar uma conexão parada há mais de 30 s,
+#    o driver testa se ela ainda responde e, se não, abre outra.
+#  - max_connection_lifetime: descarta conexões com mais de 5 min, antes que o
+#    Aura as encerre por conta própria.
+driver = GraphDatabase.driver(
+    NEO4J_URI,
+    auth=(NEO4J_USERNAME, NEO4J_PASSWORD),
+    liveness_check_timeout=30,
+    max_connection_lifetime=300,
+    keep_alive=True,
+)
 
 @contextmanager
 def get_session():
