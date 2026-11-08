@@ -32,6 +32,7 @@ def login_user(tx, email):
         .primeiroNome,
         .sobrenome,
         .fotoUrl,
+        .cargo,
         .senhaHash
     } AS user
     """
@@ -93,7 +94,8 @@ def get_user_by_id(tx, user_id):
         .email,
         .primeiroNome,
         .sobrenome,
-        .fotoUrl
+        .fotoUrl,
+        .cargo
     } AS user,
 
     size(casos) AS totalCasos,
@@ -127,12 +129,18 @@ def get_user_by_id(tx, user_id):
 
     return user
 
-def update_user(tx, user_id, email, primeiro_nome, sobrenome):
+def update_user(tx, user_id, email, primeiro_nome, sobrenome, cargo=None):
+    # cargo: None mantém o atual; texto vazio remove; senão grava sem espaços nas pontas
     query = """
     MATCH (u:Usuario {id: $user_id})
     SET u.email = $email,
         u.primeiroNome = $primeiro_nome,
         u.sobrenome = $sobrenome,
+        u.cargo = CASE
+            WHEN $cargo IS NULL THEN u.cargo
+            WHEN trim($cargo) = '' THEN null
+            ELSE trim($cargo)
+        END,
         u.atualizadoEm = datetime()
 
     RETURN u {
@@ -140,7 +148,8 @@ def update_user(tx, user_id, email, primeiro_nome, sobrenome):
         .email,
         .primeiroNome,
         .sobrenome,
-        .fotoUrl
+        .fotoUrl,
+        .cargo
     } AS user
     """
 
@@ -149,7 +158,8 @@ def update_user(tx, user_id, email, primeiro_nome, sobrenome):
         user_id=user_id,
         email=email,
         primeiro_nome=primeiro_nome,
-        sobrenome=sobrenome
+        sobrenome=sobrenome,
+        cargo=cargo
     )
 
     record = result.single()
@@ -196,7 +206,8 @@ def update_user_photo(tx, user_id, foto_base64):
         .email,
         .primeiroNome,
         .sobrenome,
-        .fotoUrl
+        .fotoUrl,
+        .cargo
     } AS user
     """
 
