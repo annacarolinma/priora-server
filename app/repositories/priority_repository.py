@@ -145,7 +145,9 @@ def upsert_and_list_actions(tx, caso_id: str) -> list[dict]:
     existentes: cria os novos, atualiza os scores dos que já existem
     (preservando o status definido manualmente pelo investigador) e
     remove sugestões que deixaram de ser relevantes E que o investigador
-    ainda não tocou (status 'Sugerida').
+    ainda não tocou (status 'Sugerida'). Ações excluídas pelo investigador
+    continuam gravadas (marcadas como `excluida`) para não serem sugeridas
+    de novo, mas não são listadas.
     """
     candidates = compute_candidate_actions(tx, caso_id)
 
@@ -167,6 +169,8 @@ def upsert_and_list_actions(tx, caso_id: str) -> list[dict]:
             a.esforco = c.esforco,
             a.impacto = c.impacto,
             a.atualizadoEm = datetime()
+        WITH a
+        WHERE coalesce(a.excluida, false) = false
         RETURN a {
             .id, .tipo, .titulo, .status, .impacto,
             .metricaLabel, .metricaValor, .recompensa, .esforco
@@ -211,3 +215,22 @@ def update_action_status(tx, action_id: str, new_status: str) -> dict:
     if not record:
         raise Exception("Ação não encontrada")
     return record["acao"]
+
+
+def get_action_for_exclusion(tx, action_id: str) -> dict | None:
+    record = tx.run(
+        """
+        MATCH (c:Caso)-[:TEM_ACAO]->(a:AcaoInvestigativa {id: $actionId})
+        RETURN c.id AS casoId, a.status AS status, a.titulo AS titulo
+        """,
+        actionId=action_id,
+    ).single()
+    return record.data() if record else None
+
+
+def exclude_action(tx, action_id: str) -> None:
+    """Exclui a ação da lista. Não apaga o nó: a ação seria sugerida de novo no próximo recálculo."""
+    tx.run(
+        "MATCH (a:AcaoInvestigativa {id: $actionId}) SET a.excluida = true, a.excluidaEm = datetime()",
+        actionId=action_id,
+    )

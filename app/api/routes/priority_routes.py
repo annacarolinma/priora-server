@@ -5,6 +5,7 @@ from app.schemas.priority_schema import UpdateActionStatusRequest
 from app.services.priority_service import (
     list_priority_actions_service,
     update_priority_action_status_service,
+    delete_priority_action_service,
 )
 
 router = APIRouter(prefix="/priority-actions", tags=["PriorityActions"])
@@ -22,3 +23,8 @@ def update_priority_action_status(
     current_user_id: str = Depends(get_current_user_id),
 ):
     return update_priority_action_status_service(current_user_id, action_id, data.status.value)
+
+
+@router.delete("/{action_id}")
+def delete_priority_action(action_id: str, current_user_id: str = Depends(get_current_user_id)):
+    return delete_priority_action_service(current_user_id, action_id)

@@ -7,6 +7,8 @@ from app.repositories.priority_repository import (
     upsert_and_list_actions,
     update_action_status,
     get_case_id_for_action,
+    get_action_for_exclusion,
+    exclude_action,
 )
 
 
@@ -34,3 +36,29 @@ def update_priority_action_status_service(current_user_id: str, action_id: str, 
             details=f"Status: {acao.get('status')}",
         )
         return acao
+
+
+def delete_priority_action_service(current_user_id: str, action_id: str):
+    with get_session() as tx:
+        acao = get_action_for_exclusion(tx, action_id)
+        if not acao:
+            raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail="Ação não encontrada")
+        require_case_role(tx, current_user_id, acao["casoId"], WRITE_ROLES)
+        # só ações já descartadas podem ser excluídas (primeiro descarta, depois exclui)
+        if acao["status"] != "Descartada":
+            raise HTTPException(
+                status_code=http_status.HTTP_409_CONFLICT,
+                detail="Só é possível excluir ações descartadas",
+            )
+        exclude_action(tx, action_id)
+        create_history(
+            tx,
+            user_id=current_user_id,
+            caso_id=acao["casoId"],
+            action="DELETE",
+            entity_type="ACAO",
+            entity_id=action_id,
+            entity_name=acao.get("titulo"),
+            details="Ação excluída",
+        )
+        return {"deleted": True, "id": action_id}
