@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 
 from app.database.neo4j import get_session
-from app.core.authorization import require_case_role, READ_ROLES, WRITE_ROLES, OWNER_ROLES
+from app.core.authorization import require_case_role, READ_ROLES, OWNER_ROLES
 from app.repositories.access_repository import (
     invite_user_to_case,
     accept_invite,
@@ -30,7 +30,8 @@ def invite_user_service(current_user_id: str, email, caso_id, papel):
 
 def _invite_user(current_user_id: str, email, caso_id, papel):
     with get_session() as tx:
-        require_case_role(tx, current_user_id, caso_id, WRITE_ROLES)
+        # somente o Responsável pelo caso convida colaboradores
+        require_case_role(tx, current_user_id, caso_id, OWNER_ROLES)
         # quem convida é sempre o usuário autenticado, nunca um userId
         # arbitrário enviado no corpo da requisição.
         convite = invite_user_to_case(tx, email, caso_id, papel, current_user_id)
