@@ -8,13 +8,21 @@ from app.database.neo4j import verify_connection, ensure_constraints, driver
 
 app = FastAPI(title="Priora API")
 
+# Origem do aplicativo desktop (Electron empacotado): esquema interno que páginas
+# da web não conseguem usar, então é seguro liberá-lo sempre.
+DESKTOP_APP_ORIGIN = "app://priora"
+
+allowed_origins = [
+    o.strip()
+    for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+    if o.strip()
+]
+if DESKTOP_APP_ORIGIN not in allowed_origins:
+    allowed_origins.append(DESKTOP_APP_ORIGIN)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        o.strip()
-        for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
-        if o.strip()
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
