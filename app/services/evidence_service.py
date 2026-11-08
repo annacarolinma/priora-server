@@ -1,3 +1,4 @@
+from app.services.notification_service import notify_evidence_added
 from fastapi import HTTPException, status
 
 from app.database.neo4j import get_session
@@ -47,6 +48,13 @@ def create_evidence_service(
         recalculate_case(
             session,
             data["casoId"]
+        )
+
+        notify_evidence_added(
+            session,
+            current_user_id,
+            data["casoId"],
+            data.get("nome") or evidencia.get("nome") or "sem nome"
         )
 
         return evidencia

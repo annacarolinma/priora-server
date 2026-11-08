@@ -42,6 +42,7 @@ def invite_user_to_case(tx, email, caso_id, papel, user_id):
     ON CREATE SET
         r.papel = $papel,
         r.status = 'Pendente',
+        r.convidadoPor = $userId,
         r.convidadoEm = datetime()
     ON MATCH SET
         r.papel = $papel
@@ -73,7 +74,7 @@ def accept_invite(tx, user_id, caso_id):
     query = """
     MATCH (u:Usuario {id: $userId})-[r:TEM_ACESSO]->(c:Caso {id: $casoId})
     SET r.status = 'Ativo'
-    RETURN c.id AS casoId, r.status AS status
+    RETURN c.id AS casoId, r.status AS status, r.papel AS papel, r.convidadoPor AS convidadoPor
     """
     result = tx.run(query,
         userId=user_id,
@@ -179,3 +180,20 @@ def get_user_label(tx, user_id: str) -> str | None:
         id=user_id,
     ).single()
     return record["nome"] if record else None
+
+
+def decline_invite(tx, user_id, caso_id):
+    """Recusa: remove o convite pendente. Devolve quem convidou (ou None)."""
+    record = tx.run(
+        """
+        MATCH (u:Usuario {id: $userId})-[r:TEM_ACESSO]->(c:Caso {id: $casoId})
+        WHERE r.status = 'Pendente'
+        WITH r, r.convidadoPor AS convidadoPor
+        DELETE r
+        RETURN convidadoPor
+        """,
+        userId=user_id, casoId=caso_id,
+    ).single()
+    if not record:
+        raise Exception("Convite não encontrado")
+    return record["convidadoPor"]

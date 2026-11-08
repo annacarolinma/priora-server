@@ -3,6 +3,7 @@ from app.core.security import get_current_user_id
 from app.services.access_service import (
     invite_user_service,
     accept_invite_service,
+    decline_invite_service,
     list_case_users_service,
     update_case_access_service,
     delete_case_access_service
@@ -30,6 +31,15 @@ def invite_user(data: InviteUserRequest, current_user_id: str = Depends(get_curr
 @router.post("/accept")
 def accept_invite(data: AcceptInviteRequest, current_user_id: str = Depends(get_current_user_id)):
     return accept_invite_service(
+        current_user_id,
+        data.userId,
+        data.casoId
+    )
+
+
+@router.post("/decline")
+def decline_invite(data: AcceptInviteRequest, current_user_id: str = Depends(get_current_user_id)):
+    return decline_invite_service(
         current_user_id,
         data.userId,
         data.casoId

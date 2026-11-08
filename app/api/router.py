@@ -12,6 +12,7 @@ from app.api.routes.investigation_board_routes import router as investigation_bo
 from app.api.routes.priority_routes import router as priority_router
 from app.api.routes.history_routes import router as history_router
 from app.api.routes.support import router as support_router
+from app.api.routes.notification_routes import router as notification_router
 
 router = APIRouter()
 
@@ -27,3 +28,4 @@ router.include_router(investigation_board_router)
 router.include_router(priority_router)
 router.include_router(history_router)
 router.include_router(support_router)
+router.include_router(notification_router)

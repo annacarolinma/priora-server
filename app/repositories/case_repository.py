@@ -423,7 +423,7 @@ def delete_case(tx, caso_id, user_id=None):
     """
     Exclui o caso e TODOS os nós que pertencem a ele, na mesma transação:
     suspeitos, evidências, contatos, análises probabilísticas, ações
-    investigativas e o histórico do caso. As relações com usuários
+    investigativas o histórico e as notificações do caso. As relações com usuários
     (RESPONSAVEL_POR / TEM_ACESSO / REALIZOU) saem junto com o DETACH, mas os
     usuários em si nunca são apagados.
 
@@ -440,8 +440,12 @@ def delete_case(tx, caso_id, user_id=None):
     OPTIONAL MATCH (h:HistoricoCaso)-[:REFERENTE_A]->(c)
     WITH c, filhos, collect(DISTINCT h) AS historico
 
+    OPTIONAL MATCH (nt:Notificacao {casoId: c.id})
+    WITH c, filhos, historico, collect(DISTINCT nt) AS notificacoes
+
     FOREACH (n IN filhos | DETACH DELETE n)
     FOREACH (n IN historico | DETACH DELETE n)
+    FOREACH (n IN notificacoes | DETACH DELETE n)
     DETACH DELETE c
 
     RETURN $casoId AS casoId

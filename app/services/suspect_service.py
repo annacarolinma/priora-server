@@ -1,3 +1,4 @@
+from app.services.notification_service import notify_suspect_added
 from fastapi import HTTPException, status
 
 from app.database.neo4j import get_session
@@ -92,6 +93,8 @@ def create_suspect_service(
             tx,
             data["casoId"]
         )
+
+        notify_suspect_added(tx, current_user_id, data["casoId"], suspect.get("nome") or "sem nome")
 
 
         return suspect
