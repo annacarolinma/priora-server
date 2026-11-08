@@ -1,0 +1,79 @@
+# Blueprint do Render: cria a API do Priora a partir do Dockerfile.
+# Uso: Render → New → Blueprint → escolha este repositório. Passo a passo em DEPLOY.md.
+#
+# Valores com `sync: false` NÃO ficam no repositório: o Render pede cada um na
+# criação do Blueprint (senhas, chaves e endereços). Nunca coloque segredos aqui.
+services:
+  - type: web
+    name: priora-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    # Escolha a região mais próxima do Neo4j Aura (veja no console do Aura).
+    # Opções: oregon, ohio, virginia, frankfurt, singapore.
+    region: ohio
+    # Branch publicada; cada push nela gera um novo deploy.
+    branch: dev
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      # O Dockerfile escuta na 8000; o Render encaminha o tráfego para essa porta.
+      - key: PORT
+        value: "8000"
+
+      # --- Neo4j Aura ---
+      - key: NEO4J_URI
+        sync: false
+      - key: NEO4J_USERNAME
+        sync: false
+      - key: NEO4J_PASSWORD
+        sync: false
+      - key: NEO4J_DATABASE
+        sync: false
+
+      # --- Autenticação (JWT) ---
+      # Gerado pelo Render (aleatório e forte). Trocar invalida os logins atuais.
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRE_HOURS
+        value: "12"
+
+      # --- E-mail (recuperação de senha e formulário de contato) ---
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+
+      # --- URLs ---
+      # Endereço do front no Vercel, ex.: https://priora.vercel.app (sem barra no final)
+      - key: FRONTEND_URL
+        sync: false
+      # Mesmo endereço do front; vários separados por vírgula
+      - key: CORS_ORIGINS
+        sync: false
+      # Endereço desta API no Render, ex.: https://priora-api.onrender.com
+      - key: PUBLIC_API_URL
+        sync: false
+
+      # --- Imagens (Supabase Storage) ---
+      # Obrigatório em produção: o disco do Render é apagado a cada deploy.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_BOARD_BUCKET
+        value: quadro-investigativo
+      - key: SUPABASE_SUSPECT_BUCKET
+        value: suspect-photos
+      - key: SUPABASE_USER_BUCKET
+        value: user-photos

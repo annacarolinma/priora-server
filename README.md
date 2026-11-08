@@ -48,6 +48,14 @@ pesos (0 < x < 1) e o limite de tentativas de login. Não precisam de banco.
 
 ---
 
+## 🌐 Publicação (produção)
+
+A API é publicada no **Render** a partir do `Dockerfile`, configurada pelo
+[`render.yaml`](render.yaml). O front vai para o Vercel. Passo a passo,
+variáveis e problemas comuns em [DEPLOY.md](DEPLOY.md).
+
+---
+
 ## 🚀 Tecnologias
 
 * Python
