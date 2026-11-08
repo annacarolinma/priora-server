@@ -96,7 +96,8 @@ def update_current_user(
         token,
         data.email,
         data.primeiroNome,
-        data.sobrenome
+        data.sobrenome,
+        data.cargo
     )
 
 
