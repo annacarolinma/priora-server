@@ -146,7 +146,8 @@ def update_user_service(
     token,
     email,
     primeiro_nome,
-    sobrenome
+    sobrenome,
+    cargo=None
 ):
     try:
         payload = decode_access_token(token)
@@ -171,7 +172,8 @@ def update_user_service(
             user_id,
             email,
             primeiro_nome,
-            sobrenome
+            sobrenome,
+            cargo
         )
 
     if not user:
