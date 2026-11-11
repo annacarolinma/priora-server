@@ -17,6 +17,20 @@ class EvidenceType(str, Enum):
     FISICA      = "Física"
     AUDIOVISUAL = "Audiovisual"
     BIOLOGICA   = "Biológica"
+    MOTIVACAO     = "Motivação"
+    ANTECEDENTE   = "Antecedente"
+    PERICIAL      = "Pericial"
+    TELEFONICA    = "Telefônica"
+    COMPORTAMENTO = "Comportamento"
+    OUTRA         = "Outra"   # qualquer tipo personalizado
+
+
+def evidence_type(valor) -> "EvidenceType":
+    """Converte o texto salvo na evidência; tipos personalizados viram OUTRA (o tipo não entra no cálculo)."""
+    try:
+        return EvidenceType(valor)
+    except ValueError:
+        return EvidenceType.OUTRA
 
 
 class EvidenceStatus(str, Enum):

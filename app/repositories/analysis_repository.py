@@ -3,6 +3,7 @@ from app.bayes.model import (
     Suspect,
     Evidence,
     EvidenceType,
+    evidence_type,
     EvidenceStatus,
     evidence_contribution,
 )
@@ -234,7 +235,7 @@ def build_analysis(caso_id, suspects_raw, evidences_raw):
         Evidence(
             id=e["id"],
             name=e["nome"],
-            type=EvidenceType(e["tipo"]),
+            type=evidence_type(e["tipo"]),
             status=EvidenceStatus(e["status"]),
             reliability=e["peso"],
             suspect_links={

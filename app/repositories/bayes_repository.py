@@ -2,6 +2,7 @@ from app.bayes.model import (
     Suspect,
     Evidence,
     EvidenceType,
+    evidence_type,
     EvidenceStatus,
     SuspectResult,
 )
@@ -128,7 +129,7 @@ def get_evidences_for_bayes(tx, caso_id):
             Evidence(
                 id=e["id"],
                 name=e["nome"],
-                type=EvidenceType(e["tipo"]),
+                type=evidence_type(e["tipo"]),
                 status=EvidenceStatus(e["status"]),
                 reliability=float(e.get("pesoCondicional") or 0.5),
                 suspect_links=suspect_links,
