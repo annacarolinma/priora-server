@@ -30,6 +30,7 @@ def compare_suspect_changes(before, after):
         "nome",
         "idade",
         "fotoUrl",
+        "descricao",
         "historicoCriminal",
         "caracteristicasCriminais",
         "significanciaTempoLugar",

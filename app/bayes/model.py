@@ -17,6 +17,20 @@ class EvidenceType(str, Enum):
     FISICA      = "Física"
     AUDIOVISUAL = "Audiovisual"
     BIOLOGICA   = "Biológica"
+    MOTIVACAO     = "Motivação"
+    ANTECEDENTE   = "Antecedente"
+    PERICIAL      = "Pericial"
+    TELEFONICA    = "Telefônica"
+    COMPORTAMENTO = "Comportamento"
+    OUTRA         = "Outra"   # qualquer tipo personalizado
+
+
+def evidence_type(valor) -> "EvidenceType":
+    """Converte o texto salvo na evidência; tipos personalizados viram OUTRA (o tipo não entra no cálculo)."""
+    try:
+        return EvidenceType(valor)
+    except ValueError:
+        return EvidenceType.OUTRA
 
 
 class EvidenceStatus(str, Enum):
@@ -55,6 +69,8 @@ class Evidence:
     status:         EvidenceStatus
     reliability:    float               # r ∈ [0.0, 1.0] — pesoCondicional
     suspect_links:  dict[str, float]    # {suspeito_id: pesoVinculo ∈ [0.0, 1.0]}
+    # {suspeito_id: "Incrimina" | "Inocenta"}; ausente = Incrimina (compatível com dados antigos)
+    suspect_effects: dict[str, str]     = field(default_factory=dict)
     date:           str                 = ""
     description:    str                 = ""
 
@@ -74,6 +90,14 @@ class Evidence:
     @property
     def suspect_ids(self) -> list[str]:
         return list(self.suspect_links.keys())
+
+    def effect_for(self, suspect_id: str) -> str:
+        return self.suspect_effects.get(suspect_id, EFEITO_INCRIMINA)
+
+    @property
+    def n_incriminated(self) -> int:
+        """Suspeitos que a evidência incrimina (base do fator de exclusividade)."""
+        return sum(1 for s in self.suspect_links if self.effect_for(s) != EFEITO_INOCENTA)
 
 
 @dataclass
@@ -163,16 +187,35 @@ import math
 from typing import List, Optional
 
 
-def evidence_contribution(reliability: float, link_weight: float, n_linked: int) -> float:
-    """
-    C = 1 + r * v * 1/|S| (seção 16.3 da documentação).
+EFEITO_INCRIMINA = "Incrimina"
+EFEITO_INOCENTA = "Inocenta"
 
-    r = confiabilidade da evidência, v = peso do vínculo com ESTE suspeito e
-    |S| = número de suspeitos vinculados à evidência (fator de exclusividade).
+
+def evidence_contribution(
+    reliability: float,
+    link_weight: float,
+    n_linked: int,
+    efeito: str = EFEITO_INCRIMINA,
+) -> float:
+    """
+    Contribuição C de uma evidência para um suspeito (razão de verossimilhança).
+
+    Evidência que INCRIMINA (seção 16.3):  C = 1 + r · v · 1/|S|  (C ≥ 1)
+      r = confiabilidade da evidência, v = peso do vínculo com ESTE suspeito e
+      |S| = número de suspeitos que a evidência incrimina (fator de exclusividade).
+
+    Evidência que INOCENTA (álibi, contradição):  C = 1 / (1 + r · v)  (C ≤ 1)
+      É o inverso da contribuição de uma evidência incriminadora de mesma força
+      (sem o fator de exclusividade, que divide o efeito entre os incriminados):
+      log C é simétrico, de modo que uma evidência que afasta o suspeito
+      compensa exatamente uma que o incrimina com os mesmos r e v.
+
     É a única definição da fórmula: o motor bayesiano e a tela de Análise
     Probabilística usam esta função, para que a explicação sempre bata com o
     cálculo.
     """
+    if efeito == EFEITO_INOCENTA:
+        return 1.0 / (1.0 + reliability * link_weight)
     return 1.0 + (reliability * link_weight * (1.0 / max(n_linked, 1)))
 
 
@@ -283,7 +326,8 @@ class BayesianNetwork:
     
     def _evidence_contribution(self, suspect: Suspect, evidence: Evidence, all_suspects: list[Suspect]) -> float:
         """
-        Implementa C(Hᵢ, eⱼ) = 1 + (r × v × 1/|S|) da documentação (seção 16.3).
+        Implementa C(Hᵢ, eⱼ) da documentação (seção 16.3): 1 + (r × v × 1/|S|) para evidência que
+        incrimina e 1 / (1 + r × v) para a que inocenta.
 
         Uma evidência não vinculada ao suspeito não entra na formulação do
         documento — portanto não deve afetar seu score (contribuição neutra
@@ -299,7 +343,8 @@ class BayesianNetwork:
         return evidence_contribution(
             evidence.reliability,
             peso_vinculo,
-            len(evidence.suspect_links),
+            evidence.n_incriminated,
+            evidence.effect_for(suspect.id),
         )
 
     # ──────────────────────────────────────────────────────────────
@@ -308,8 +353,9 @@ class BayesianNetwork:
 
     def _log_likelihood_ratio(self, suspect, evidences, all_suspects):
         """
-        IMPORTANTE: `_evidence_contribution` retorna valores em [1.0, 2.0]
-        (1 + r·v·fatorExclusividade, com r,v ∈ [0,1]), não em (0,1) como
+        IMPORTANTE: `_evidence_contribution` retorna valores em [0.5, 2.0]: de 1 a 2 para
+        evidência que incrimina (1 + r·v·fatorExclusividade, com r,v ∈ [0,1]) e de 0,5 a 1 para a
+        que inocenta (1 / (1 + r·v)); não em (0,1) como
         uma probabilidade. Usar `_clamp` aqui (que teto em 1 - epsilon)
         achatava toda contribuição > 1 de volta para ~1, anulando o efeito
         de qualquer evidência no score. Só é preciso um piso contra

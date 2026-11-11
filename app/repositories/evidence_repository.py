@@ -135,6 +135,7 @@ def create_evidence(
         nome:$nome,
         tipo:$tipo,
         descricao:$descricao,
+        fonte:$fonte,
         status:$status,
 
         dataColeta:date($dataColeta),
@@ -163,6 +164,7 @@ def create_evidence(
     CREATE (e)-[:VINCULA {
 
         pesoVinculo:v.pesoVinculo,
+        efeito:coalesce(v.efeito, 'Incrimina'),
         vinculadoEm:datetime()
 
     }]->(s)
@@ -175,6 +177,8 @@ def create_evidence(
         .tipo,
         .status,
         .descricao,
+
+        .fonte,
         .pesoCondicional,
         dataColeta:toString(e.dataColeta)
 
@@ -202,6 +206,8 @@ def create_evidence(
         descricao=data.get(
             "descricao"
         ),
+
+        fonte=data.get("fonte"),
 
         status=data["status"],
 
@@ -268,7 +274,8 @@ collect(
 
             nome:s.nome,
 
-            pesoVinculo:v.pesoVinculo
+            pesoVinculo: v.pesoVinculo,
+            efeito: coalesce(v.efeito, 'Incrimina')
 
         }
 
@@ -308,7 +315,8 @@ def list_evidences_by_case(
             THEN {
                 id: s.id,
                 nome: s.nome,
-                pesoVinculo: v.pesoVinculo
+                pesoVinculo: v.pesoVinculo,
+            efeito: coalesce(v.efeito, 'Incrimina')
             }
             ELSE NULL
         END
@@ -324,6 +332,8 @@ def list_evidences_by_case(
         .nome,
         .tipo,
         .status,
+        .descricao,
+        .fonte,
         .dataColeta,
         .pesoCondicional
     } AS evidencia,
@@ -370,7 +380,8 @@ def get_evidence_by_id(
             THEN {
                 id: s.id,
                 nome: s.nome,
-                pesoVinculo: v.pesoVinculo
+                pesoVinculo: v.pesoVinculo,
+            efeito: coalesce(v.efeito, 'Incrimina')
             }
             ELSE NULL
         END
@@ -385,6 +396,8 @@ def get_evidence_by_id(
         .tipo,
         .status,
         .descricao,
+
+        .fonte,
         .pesoCondicional,
         .dataColeta
     } AS evidencia,
@@ -553,6 +566,8 @@ def update_evidence(
         .tipo,
         .status,
         .descricao,
+
+        .fonte,
         .pesoCondicional,
 
         dataColeta:toString(e.dataColeta)
@@ -597,6 +612,8 @@ def update_evidence(
         "status":"e.status",
 
         "descricao":"e.descricao",
+
+        "fonte":"e.fonte",
 
         "dataColeta":"e.dataColeta",
 
@@ -736,6 +753,7 @@ def update_evidence(
         CREATE (e)-[:VINCULA {
 
             pesoVinculo:v.pesoVinculo,
+        efeito:coalesce(v.efeito, 'Incrimina'),
 
             vinculadoEm:datetime()
 
@@ -771,6 +789,9 @@ def update_evidence(
         .status,
 
         .descricao,
+
+
+        .fonte,
 
         .pesoCondicional,
 
@@ -823,6 +844,8 @@ def update_evidence(
         "status",
 
         "descricao",
+
+        "fonte",
 
         "pesoCondicional",
 

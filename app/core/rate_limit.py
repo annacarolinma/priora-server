@@ -49,4 +49,24 @@ class FailedAttemptLimiter:
             self._failures.pop(key, None)
 
 
+class Cooldown:
+    """Intervalo mínimo entre duas ações da mesma chave (ex.: reenvio de e-mail)."""
+
+    def __init__(self, seconds: int):
+        self.seconds = seconds
+        self._last: dict[str, float] = {}
+        self._lock = threading.Lock()
+
+    def try_acquire(self, key: str) -> int:
+        """0 se liberou (e já registra o uso); senão, segundos até poder de novo."""
+        now = time.monotonic()
+        with self._lock:
+            last = self._last.get(key)
+            if last is not None and now - last < self.seconds:
+                return max(1, int(self.seconds - (now - last)))
+            self._last[key] = now
+            return 0
+
+
 login_limiter = FailedAttemptLimiter()
+verification_cooldown = Cooldown(60)

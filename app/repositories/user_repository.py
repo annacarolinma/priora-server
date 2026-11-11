@@ -1,4 +1,5 @@
-def create_user(tx, email, primeiro_nome, sobrenome, senha_hash):
+def create_user(tx, email, primeiro_nome, sobrenome, senha_hash, email_verificado=True, token_hash=None, expira_horas=24):
+    # Com confirmação exigida, a conta nasce com emailVerificado = false e o hash do token.
     query = """
     CREATE (u:Usuario {
         id: randomUUID(),
@@ -6,9 +7,14 @@ def create_user(tx, email, primeiro_nome, sobrenome, senha_hash):
         primeiroNome: $primeiro_nome,
         sobrenome: $sobrenome,
         senhaHash: $senha_hash,
+        emailVerificado: $email_verificado,
         criadoEm: datetime(),
         ultimoAcesso: datetime()
     })
+    FOREACH (_ IN CASE WHEN $token_hash IS NULL THEN [] ELSE [1] END |
+        SET u.tokenVerificacao = $token_hash,
+            u.tokenVerificacaoExpiraEm = datetime() + duration({hours: $expira_horas})
+    )
     RETURN u {
         .id, .email, .primeiroNome, .sobrenome, .criadoEm
     } AS user
@@ -17,9 +23,37 @@ def create_user(tx, email, primeiro_nome, sobrenome, senha_hash):
         email=email,
         primeiro_nome=primeiro_nome,
         sobrenome=sobrenome,
-        senha_hash=senha_hash
+        senha_hash=senha_hash,
+        email_verificado=email_verificado,
+        token_hash=token_hash,
+        expira_horas=expira_horas
     )
     return result.single()["user"]
+
+
+def verify_email(tx, token_hash):
+    """Confirma o e-mail se o token existe e não expirou; o token é de uso único."""
+    query = """
+    MATCH (u:Usuario {tokenVerificacao: $token_hash})
+    WHERE u.tokenVerificacaoExpiraEm > datetime()
+    SET u.emailVerificado = true,
+        u.atualizadoEm = datetime()
+    REMOVE u.tokenVerificacao, u.tokenVerificacaoExpiraEm
+    RETURN u.id AS id
+    """
+    return tx.run(query, token_hash=token_hash).single()
+
+
+def set_verification_token(tx, email, token_hash, expira_horas):
+    """Gera novo token só para conta ainda não confirmada (None nos outros casos)."""
+    query = """
+    MATCH (u:Usuario {email: $email})
+    WHERE u.emailVerificado = false
+    SET u.tokenVerificacao = $token_hash,
+        u.tokenVerificacaoExpiraEm = datetime() + duration({hours: $expira_horas})
+    RETURN u.primeiroNome AS primeiroNome
+    """
+    return tx.run(query, email=email, token_hash=token_hash, expira_horas=expira_horas).single()
 
 
 def login_user(tx, email):
@@ -33,6 +67,7 @@ def login_user(tx, email):
         .sobrenome,
         .fotoUrl,
         .cargo,
+        .emailVerificado,
         .senhaHash
     } AS user
     """
