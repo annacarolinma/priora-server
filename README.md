@@ -20,6 +20,9 @@ docker compose up -d --build
 * O banco fica no volume `neo4j_data`; as imagens (quadro, fotos de suspeitos e de perfil) ficam em `uploads`.
   Deixe `SUPABASE_*` vazio no `.env` para não depender de nuvem.
 * Para apagar todos os dados: `docker compose down -v`.
+* No Docker a confirmação de e-mail do cadastro vem **desligada** (não há servidor de e-mail na rede local):
+  as contas nascem confirmadas. Para exigir, configure `MAIL_*` e defina `REQUIRE_EMAIL_VERIFICATION=true`.
+  Fora do Docker ela vem ligada; com `MAIL_SUPPRESS_SEND=true` o link de confirmação aparece no log do servidor.
 * O front roda à parte (`npm run dev` no `priora_client`, porta 5173).
 
 ### Opção 2 — Python local (usa o Neo4j do `.env`, ex.: Aura)

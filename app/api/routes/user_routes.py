@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
 from app.core.security import get_current_user_id
 from app.services.user_service import (
     create_user_service,
+    verify_email_service,
+    resend_verification_service,
     login_user_service,
     recovery_token_service,
     reset_password_service,
@@ -20,6 +22,8 @@ from app.schemas.user_schema import (
     ResetPasswordRequest,
     UpdateUserRequest,
     ChangePasswordRequest,
+    VerifyEmailRequest,
+    ResendVerificationRequest,
 )
 
 router = APIRouter(
@@ -29,13 +33,23 @@ router = APIRouter(
 
 
 @router.post("/", status_code=201)
-def create_user(data: CreateUserRequest):
-    return create_user_service(
+async def create_user(data: CreateUserRequest):
+    return await create_user_service(
         data.email,
         data.primeiroNome,
         data.sobrenome,
         data.senha
     )
+
+@router.post("/verify-email")
+def verify_email(data: VerifyEmailRequest):
+    return verify_email_service(data.token)
+
+
+@router.post("/resend-verification")
+async def resend_verification(data: ResendVerificationRequest):
+    return await resend_verification_service(data.email)
+
 
 @router.post("/me/photo")
 async def upload_photo(
