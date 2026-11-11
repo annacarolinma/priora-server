@@ -34,6 +34,8 @@ class CreateEvidenceRequest(BaseModel):
     tipo: TipoEvidencia
     status: StatusEvidencia = StatusEvidencia.Coletada
     descricao: str | None = None
+    # Origem da informação (laudo, depoimento, documento, reportagem...)
+    fonte: str | None = Field(default=None, max_length=300)
 
     dataColeta: str = Field(..., example="2025-04-24")
 
@@ -49,6 +51,7 @@ class UpdateEvidenceRequest(BaseModel):
     tipo: TipoEvidencia | None = None
     status: StatusEvidencia | None = None
     descricao: str | None = None
+    fonte: str | None = Field(default=None, max_length=300)
     dataColeta: str | None = None
     peso: float | None = Field(default=None, gt=0.0, lt=1.0)
     vinculos: list[VinculoInput] | None = None

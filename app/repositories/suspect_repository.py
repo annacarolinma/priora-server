@@ -23,6 +23,8 @@ def get_suspect_by_id(tx, suspect_id: str):
         .nome,
         .idade,
         .fotoUrl,
+
+        .descricao,
         .historicoCriminal,
         .caracteristicasCriminais,
         .significanciaTempoLugar,
@@ -59,6 +61,8 @@ def create_suspect(tx, data):
         idade: $idade,
 
         fotoUrl: $fotoUrl,
+
+        descricao: $descricao,
 
         probabilidadeAtual: 0.0,
 
@@ -102,6 +106,9 @@ def create_suspect(tx, data):
 
         .fotoUrl,
 
+
+        .descricao,
+
         .probabilidadeAtual,
 
         .posicaoRanking,
@@ -143,6 +150,8 @@ def list_suspects_by_case(tx, caso_id):
         s.idade AS idade,
 
         s.fotoUrl AS fotoUrl,
+
+        s.descricao AS descricao,
 
         s.probabilidadeAtual AS probabilidadeAtual,
 
@@ -241,6 +250,8 @@ def update_suspect(tx, suspect_id, data):
 
         s.fotoUrl = $fotoUrl,
 
+        s.descricao = $descricao,
+
         s.historicoCriminal = $historicoCriminal,
 
         s.caracteristicasCriminais = $caracteristicasCriminais,
@@ -267,6 +278,9 @@ def update_suspect(tx, suspect_id, data):
         .idade,
 
         .fotoUrl,
+
+
+        .descricao,
 
         .historicoCriminal,
 

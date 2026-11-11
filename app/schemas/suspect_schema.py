@@ -21,6 +21,8 @@ class CreateSuspectRequest(BaseModel):
     nome: str = Field(..., example="Elvin Bond")
     idade: int = Field(..., ge=0, example=32)
     fotoUrl: Optional[str] = None
+    # Observações sobre o suspeito (relação com a vítima, contexto, fonte da suspeita...)
+    descricao: Optional[str] = Field(default=None, max_length=1000)
 
     historicoCriminal: float = Field(..., ge=0, le=100, example=70)
     caracteristicasCriminais: float = Field(..., ge=0, le=100, example=55)
@@ -35,6 +37,7 @@ class UpdateSuspectRequest(BaseModel):
     nome: str
     idade: Optional[int] = None
     fotoUrl: Optional[str] = None
+    descricao: Optional[str] = Field(default=None, max_length=1000)
 
     historicoCriminal: float
     caracteristicasCriminais: float
