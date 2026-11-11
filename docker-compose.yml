@@ -42,6 +42,9 @@ services:
       PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:8000}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       UPLOAD_DIR: /app/uploads
+      # Sem servidor de e-mail na rede local, a conta nasce já confirmada. Para exigir
+      # a confirmação, configure MAIL_* no .env e defina REQUIRE_EMAIL_VERIFICATION=true.
+      REQUIRE_EMAIL_VERIFICATION: ${REQUIRE_EMAIL_VERIFICATION:-false}
     ports:
       - "8000:8000"
     depends_on:
