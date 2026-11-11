@@ -224,7 +224,7 @@ def build_analysis(caso_id, suspects_raw, evidences_raw):
         Suspect(
             id=s["id"],
             name=s["nome"],
-            age=s.get("idade", 0),
+            age=s.get("idade") or 0,
             photo_url=s.get("fotoUrl"),
         )
         for s in suspects_raw
