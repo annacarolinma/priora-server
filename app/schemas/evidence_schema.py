@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from enum import Enum
+from typing import Literal
 
 
 class TipoEvidencia(str, Enum):
@@ -43,6 +44,8 @@ class VinculoInput(BaseModel):
     """Peso do vínculo entre a evidência e UM suspeito específico (estritamente entre 0 e 1: nunca 0% nem 100%)."""
     suspeitoId: str
     pesoVinculo: float = Field(..., gt=0.0, lt=1.0, example=0.75)
+    # Incrimina (padrão): a evidência aponta para o suspeito. Inocenta: ela o afasta (ex.: álibi).
+    efeito: Literal["Incrimina", "Inocenta"] = "Incrimina"
 
 
 class CreateEvidenceRequest(BaseModel):

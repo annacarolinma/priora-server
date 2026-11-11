@@ -78,6 +78,7 @@ def get_suspect_analysis(tx, caso_id, suspeito_id):
 
                 pesoCondicional: e.pesoCondicional,
                 pesoVinculo: coalesce(v.pesoVinculo, 1.0),
+                efeito: coalesce(v.efeito, 'Incrimina'),
 
                 pesoFinal:
                     e.pesoCondicional *
@@ -85,6 +86,8 @@ def get_suspect_analysis(tx, caso_id, suspeito_id):
 
                 // todos os suspeitos ligados à evidência (fator de exclusividade)
                 suspectIds: [(e)-[:VINCULA]->(x:Suspeito) | x.id],
+                // suspeitos que a evidência incrimina (base do fator de exclusividade)
+                nIncriminados: size([(e)-[y:VINCULA]->(:Suspeito) WHERE coalesce(y.efeito, 'Incrimina') <> 'Inocenta' | 1]),
 
                 dataColeta: toString(e.dataColeta),
                 descricao: e.descricao
@@ -132,7 +135,8 @@ def get_suspect_analysis(tx, caso_id, suspeito_id):
             evidence_contribution(
                 ev["pesoCondicional"],
                 ev["pesoVinculo"],
-                len(ev["suspectIds"]),
+                ev["nIncriminados"],
+                ev["efeito"],
             ),
             6,
         )
@@ -198,7 +202,7 @@ def load_evidences(tx, caso_id):
 
     WITH e, collect(
         CASE WHEN s IS NOT NULL
-            THEN { suspeitoId: s.id, pesoVinculo: v.pesoVinculo }
+            THEN { suspeitoId: s.id, pesoVinculo: v.pesoVinculo, efeito: coalesce(v.efeito, 'Incrimina') }
             ELSE NULL
         END
     ) AS vinculosRaw
@@ -242,6 +246,7 @@ def build_analysis(caso_id, suspects_raw, evidences_raw):
                 v["suspeitoId"]: (v["pesoVinculo"] if v["pesoVinculo"] is not None else 1.0)
                 for v in e["vinculos"]
             },
+            suspect_effects={v["suspeitoId"]: v.get("efeito") or "Incrimina" for v in e["vinculos"]},
             date=e["dataColeta"] or "",
             description=e["descricao"] or "",
         )

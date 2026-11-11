@@ -164,6 +164,7 @@ def create_evidence(
     CREATE (e)-[:VINCULA {
 
         pesoVinculo:v.pesoVinculo,
+        efeito:coalesce(v.efeito, 'Incrimina'),
         vinculadoEm:datetime()
 
     }]->(s)
@@ -273,7 +274,8 @@ collect(
 
             nome:s.nome,
 
-            pesoVinculo:v.pesoVinculo
+            pesoVinculo: v.pesoVinculo,
+            efeito: coalesce(v.efeito, 'Incrimina')
 
         }
 
@@ -313,7 +315,8 @@ def list_evidences_by_case(
             THEN {
                 id: s.id,
                 nome: s.nome,
-                pesoVinculo: v.pesoVinculo
+                pesoVinculo: v.pesoVinculo,
+            efeito: coalesce(v.efeito, 'Incrimina')
             }
             ELSE NULL
         END
@@ -377,7 +380,8 @@ def get_evidence_by_id(
             THEN {
                 id: s.id,
                 nome: s.nome,
-                pesoVinculo: v.pesoVinculo
+                pesoVinculo: v.pesoVinculo,
+            efeito: coalesce(v.efeito, 'Incrimina')
             }
             ELSE NULL
         END
@@ -749,6 +753,7 @@ def update_evidence(
         CREATE (e)-[:VINCULA {
 
             pesoVinculo:v.pesoVinculo,
+        efeito:coalesce(v.efeito, 'Incrimina'),
 
             vinculadoEm:datetime()
 

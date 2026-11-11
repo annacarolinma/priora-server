@@ -98,7 +98,7 @@ def get_evidences_for_bayes(tx, caso_id):
     OPTIONAL MATCH (e)-[v:VINCULA]->(s:Suspeito)
     WITH e, collect(
         CASE WHEN s IS NOT NULL
-            THEN { suspeitoId: s.id, pesoVinculo: v.pesoVinculo }
+            THEN { suspeitoId: s.id, pesoVinculo: v.pesoVinculo, efeito: coalesce(v.efeito, 'Incrimina') }
             ELSE NULL
         END
     ) AS vinculosRaw
@@ -133,6 +133,7 @@ def get_evidences_for_bayes(tx, caso_id):
                 status=EvidenceStatus(e["status"]),
                 reliability=float(e.get("pesoCondicional") or 0.5),
                 suspect_links=suspect_links,
+                suspect_effects={v["suspeitoId"]: v.get("efeito") or "Incrimina" for v in vinculos},
                 date=str(e["dataColeta"]) if e.get("dataColeta") else "",
                 description=e.get("descricao") or "",
             )
